@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>New Request Form</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-light">
+  <div class="container p-4">
+    <!-- Logo -->
+    <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
+
+    <!-- Heading -->
+    <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
+
+    <!-- Form Start -->
+    <form id="requestForm">
+      <div class="mb-3">
+        <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="dealer_name" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Email <span class="text-danger">*</span></label>
+        <input type="email" class="form-control" name="email" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Phone Number (Optional)</label>
+        <input type="tel" class="form-control" name="phone" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
+        <input type="text" class="form-control" name="requestor_name" required />
+      </div>
+
+      <!-- Feature Request Blocks -->
+      <div id="featureBlocks">
+        <div class="feature-block mb-4" data-index="1">
+          <h5 class="mt-4 mb-3">Feature 1</h5>
+
+          <label class="form-label">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
+          <textarea class="form-control" name="feature_description_1" rows="4" required></textarea>
+
+          <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
+          <input type="file" class="form-control" name="attachment_1" accept="image/*,.pdf,.doc,.docx" />
+
+          <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
+          <select class="form-select severity-select" name="severity_1" required>
+            <option value="" disabled selected hidden>Select a severity</option>
+            <option value="1">1 - (Nice to Have)</option>
+            <option value="2">2 - (Important but Workable)</option>
+            <option value="3">3 - (Cannot Operate/Sell without)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Add Feature Button -->
+      <button type="button" id="addFeature" class="btn btn-outline-secondary mb-3">
+        + Add Another Feature
+      </button>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn w-100" style="background-color: #2C6C93; color: white; border: none;">
+        Submit
+      </button>
+    </form>
+  </div>
+
+  <!-- Script for logic -->
+  <script>
+    const addBtn = document.getElementById('addFeature');
+    const container = document.getElementById('featureBlocks');
+
+    let featureCount = 1;
+    const maxFeatures = 3;
+
+    addBtn.addEventListener('click', () => {
+      if (featureCount >= maxFeatures) return;
+
+      featureCount++;
+      const block = document.createElement('div');
+      block.className = 'feature-block mb-4';
+      block.setAttribute('data-index', featureCount);
+
+      block.innerHTML = `
+        <h5 class="mt-4 mb-3">Feature ${featureCount}</h5>
+
+        <label class="form-label">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
+        <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
+
+        <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
+        <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
+
+        <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
+        <select class="form-select severity-select" name="severity_${featureCount}" required>
+          <option value="" disabled selected hidden>Select a severity</option>
+          <option value="1">1 - (Cannot Operate/Sell without)</option>
+          <option value="2">2 - (Important but Workable)</option>
+          <option value="3">3 - (Nice to Have)</option>
+        </select>
+      `;
+
+      container.appendChild(block);
+      updateSeverityOptions();
+
+      if (featureCount === maxFeatures) {
+        addBtn.disabled = true;
+      }
+    });
+
+    function updateSeverityOptions() {
+      const selects = document.querySelectorAll('.severity-select');
+      const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== "");
+
+      selects.forEach(select => {
+        const current = select.value;
+        Array.from(select.options).forEach(opt => {
+          if (opt.value === "") return;
+          opt.disabled = selectedValues.includes(opt.value) && opt.value !== current;
+        });
+      });
+    }
+
+    document.addEventListener('change', (e) => {
+      if (e.target.classList.contains('severity-select')) {
+        updateSeverityOptions();
+      }
+    });
+
+    const form = document.getElementById('requestForm');
+    form.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const obj = Object.fromEntries(formData);
+
+      const response = await fetch('https://c115-47-18-38-63.ngrok-free.app/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(obj)
+      });
+
+      if (response.ok) {
+        alert('Form submitted successfully!');
+        form.reset();
+      } else {
+        alert('Submission failed.');
+      }
+    });
+  </script>
+</body>
+</html>
