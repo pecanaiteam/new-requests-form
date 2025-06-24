@@ -11,7 +11,7 @@
     <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
     <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-    <form id="requestForm" enctype="multipart/form-data" method="POST" action="http://972d-75-127-216-146.ngrok-free.app/submit">
+    <form id="requestForm" enctype="multipart/form-data" method="POST" action="http://b4f7-75-127-216-146.ngrok-free.app/submit">
       <div class="mb-3">
         <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="dealer_name" required />
@@ -52,74 +52,74 @@
   </div>
 
   <script>
-    const addBtn = document.getElementById('addFeature');
-    const container = document.getElementById('featureBlocks');
-    let featureCount = 1;
-    const maxFeatures = 3;
+  const addBtn = document.getElementById('addFeature')
+  const container = document.getElementById('featureBlocks')
+  let featureCount = 1
+  const maxFeatures = 3
 
-    addBtn.addEventListener('click', () => {
-      if (featureCount >= maxFeatures) return;
-      featureCount++;
-      const block = document.createElement('div');
-      block.className = 'feature-block mb-4';
-      block.setAttribute('data-index', featureCount);
-      block.innerHTML = `
-        <h5 class="mt-4 mb-3">Feature ${featureCount}</h5>
-        <label class="form-label">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
-        <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
-        <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
-        <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
-        <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
-        <select class="form-select severity-select" name="severity_${featureCount}" required>
-          <option value="" disabled selected hidden>Select a severity</option>
-          <option value="1">1 - (Cannot Operate/Sell without)</option>
-          <option value="2">2 - (Important but Workable)</option>
-          <option value="3">3 - (Nice to Have)</option>
-        </select>
-      `;
-      container.appendChild(block);
-      updateSeverityOptions();
-      if (featureCount === maxFeatures) {
-        addBtn.disabled = true;
-      }
-    });
+  addBtn.addEventListener('click', () => {
+    if (featureCount >= maxFeatures) return
+    featureCount++
+    const block = document.createElement('div')
+    block.className = 'feature-block mb-4'
+    block.dataset.index = featureCount
+    block.innerHTML = `
+      <h5 class="mt-4 mb-3">Feature ${featureCount}</h5>
+      <label class="form-label">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
+      <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
+      <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
+      <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
+      <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
+      <select class="form-select severity-select" name="severity_${featureCount}" required>
+        <option value="" disabled selected hidden>Select a severity</option>
+        <option value="1">1 - (Cannot Operate/Sell without)</option>
+        <option value="2">2 - (Important but Workable)</option>
+        <option value="3">3 - (Nice to Have)</option>
+      </select>
+    `
+    container.appendChild(block)
+    updateSeverityOptions()
+    if (featureCount === maxFeatures) addBtn.disabled = true
+  })
 
-    function updateSeverityOptions() {
-      const selects = document.querySelectorAll('.severity-select');
-      const selectedValues = Array.from(selects).map(s => s.value).filter(v => v !== "");
-      selects.forEach(select => {
-        const current = select.value;
-        Array.from(select.options).forEach(opt => {
-          if (opt.value === "") return;
-          opt.disabled = selectedValues.includes(opt.value) && opt.value !== current;
-        });
-      });
+  function updateSeverityOptions() {
+    const selects = document.querySelectorAll('.severity-select')
+    const selected = Array.from(selects).map(s => s.value).filter(v => v)
+    selects.forEach(select => {
+      Array.from(select.options).forEach(option => {
+        if (!option.value) return
+        option.disabled = selected.includes(option.value) && option.value !== select.value
+      })
+    })
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.classList.contains('severity-select')) {
+      updateSeverityOptions()
     }
+  })
 
-    document.addEventListener('change', (e) => {
-      if (e.target.classList.contains('severity-select')) {
-        updateSeverityOptions();
-      }
-    });
+  const form = document.getElementById('requestForm')
+  form.addEventListener('submit', async e => {
+    e.preventDefault()
+    const formData = new FormData(form)
 
-    const form = document.getElementById('requestForm');
-    form.addEventListener('submit', async function (e) {
-      e.preventDefault();
-      const formData = new FormData(form);
-
-      const response = await fetch('/submit', {
+    try {
+      const response = await fetch(form.action, {
         method: 'POST',
-        body: new FormData(document.getElementById('requestForm')),
-        credentials: 'include'
-      });
-
+        body: formData
+      })
       if (response.ok) {
-        alert('Form submitted successfully!');
-        form.reset();
+        alert('Form submitted successfully!')
+        form.reset()
       } else {
-        alert('Submission failed.');
+        const err = await response.json()
+        alert('Submission failed: ' + (err.message || response.statusText))
       }
-    });
-  </script>
+    } catch (error) {
+      alert('Network error: ' + error.message)
+    }
+  })
+</script>
 </body>
 </html>
