@@ -87,27 +87,40 @@ def submit():
     try:
         form = request.form
         files = request.files
+        print("== Incoming submission ==")
+        print("Form data:", form)
+        print("Files:", files)
+
         row = [
             form.get("dealer_name", ""),
             form.get("email", ""),
             form.get("phone", ""),
             form.get("requestor_name", "")
         ]
+
         for i in range(1, 4):
             desc = form.get(f"feature_description_{i}", "")
             sev = form.get(f"severity_{i}", "")
             upload = files.get(f"attachment_{i}")
+            print(f"Feature {i} -> Desc: {desc}, Severity: {sev}, File: {upload.filename if upload else 'None'}")
+
             fname = ""
             if upload and upload.filename:
                 fname = secure_filename(upload.filename)
-                upload.save(os.path.join(UPLOAD_FOLDER, fname))
+                filepath = os.path.join(app.config["UPLOAD_FOLDER"], fname)
+                upload.save(filepath)
+                print(f"Saved attachment to: {filepath}")
             row.extend([desc, sev, fname])
+
         wb = load_workbook(EXCEL_FILE)
         ws = wb.active
         ws.append(row)
         wb.save(EXCEL_FILE)
+        print("Row saved to Excel:", row)
         return jsonify({"status": "success"})
+
     except Exception as e:
+        print("Error during submission:", e)
         return jsonify({"status": "error", "message": str(e)}), 500
 
 if __name__ == "__main__":
