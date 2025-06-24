@@ -11,7 +11,7 @@
     <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
     <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-    <form id="requestForm" enctype="multipart/form-data" method="POST" action="/submit">
+    <form id="requestForm" enctype="multipart/form-data" method="POST" action="http://2c96-75-127-216-146.ngrok-free.app/submit">
       <div class="mb-3">
         <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
         <input type="text" class="form-control" name="dealer_name" required />
@@ -99,7 +99,6 @@
     }
   })
 
-  <script>
   const form = document.getElementById('requestForm')
   form.addEventListener('submit', async e => {
     e.preventDefault()
@@ -111,17 +110,14 @@
         body: formData
       })
 
-      const result = await response.json()
-      console.log("Server response:", result)
-
       if (response.ok) {
-        alert('Form submitted: ' + JSON.stringify(result))
+        alert('Form submitted successfully!')
         form.reset()
       } else {
-        alert('Submission failed: ' + JSON.stringify(result))
+        const err = await response.json()
+        alert('Submission failed: ' + (err.message || response.statusText))
       }
     } catch (error) {
-      console.error("JS error:", error)
       alert('Network error: ' + error.message)
     }
   })
