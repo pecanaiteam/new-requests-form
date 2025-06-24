@@ -9,7 +9,7 @@ from github import Github, GithubException
 
 # start an http‐only ngrok tunnel on port 5000
 ngrok.kill()
-tunnel = ngrok.connect(5000, proto="http", bind_tls=False)
+tunnel = ngrok.connect(5000) 
 public_url = tunnel.public_url
 print("ngrok public url:", public_url)
 
