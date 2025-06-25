@@ -7,51 +7,85 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body class="bg-light">
-  <div class="container p-4">
-    <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
-    <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-    <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://e667-75-127-216-146.ngrok-free.app/submit">
-      <div class="mb-3">
-        <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" name="dealer_name" required />
+<!-- Disclaimer Modal -->
+<div class="modal fade" id="disclaimerModal" tabindex="-1" aria-labelledby="disclaimerLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="disclaimerLabel">Disclaimer</h5>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Email <span class="text-danger">*</span></label>
-        <input type="email" class="form-control" name="email" required />
+      <div class="modal-body">
+        <p>
+          Please note that submitting this form is not a promise of delivery or implementation.
+          These are requests only and we will review every suggestion but cannot promise any feature or timeline.
+        </p>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Phone Number (Optional)</label>
-        <input type="tel" class="form-control" name="phone" />
+      <div class="modal-footer">
+        <button id="agreeBtn" type="button" class="btn btn-primary">I Agree</button>
       </div>
-      <div class="mb-3">
-        <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" name="requestor_name" required />
-      </div>
-
-      <div id="featureBlocks">
-        <div class="feature-block mb-4" data-index="1">
-          <h5 class="mt-4 mb-3">Feature 1</h5>
-          <label class="form-label">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
-          <textarea class="form-control" name="feature_description_1" rows="4" required></textarea>
-          <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
-          <input type="file" class="form-control" name="attachment_1" accept="image/*,.pdf,.doc,.docx" />
-          <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
-          <select class="form-select severity-select" name="severity_1" required>
-            <option value="" disabled selected hidden>Select a severity</option>
-            <option value="1">1 - (Cannot Operate/Sell without)</option>
-            <option value="2">2 - (Important but Workable)</option>
-            <option value="3">3 - (Nice to Have)</option>
-          </select>
-        </div>
-      </div>
-
-      <button type="button" id="addFeature" class="btn btn-outline-secondary mb-3">+ Add Another Feature</button>
-      <button type="submit" class="btn w-100" style="background-color: #2C6C93; color: white; border: none;">Submit</button>
-    </form>
+    </div>
   </div>
+</div>
 
-  <script>
+<!-- Main Form Content -->
+<div class="container p-4" id="formContainer" style="display: none;">
+  <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
+  <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
+
+  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://5781-75-127-216-146.ngrok-free.app/submit">
+    <!-- Dealer Info -->
+    <div class="mb-3">
+      <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" name="dealer_name" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email <span class="text-danger">*</span></label>
+      <input type="email" class="form-control" name="email" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Phone Number (Optional)</label>
+      <input type="tel" class="form-control" name="phone" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control" name="requestor_name" required />
+    </div>
+
+    <!-- Features -->
+    <div id="featureBlocks">
+      <div class="feature-block mb-4" data-index="1">
+        <h5 class="mt-4 mb-3">Feature 1</h5>
+        <label class="form-label">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
+        <textarea class="form-control" name="feature_description_1" rows="4" required></textarea>
+        <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
+        <input type="file" class="form-control" name="attachment_1" accept="image/*,.pdf,.doc,.docx" />
+        <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
+        <select class="form-select severity-select" name="severity_1" required>
+          <option value="" disabled selected hidden>Select a severity</option>
+          <option value="1">1 - (Cannot Operate/Sell without)</option>
+          <option value="2">2 - (Important but Workable)</option>
+          <option value="3">3 - (Nice to Have)</option>
+        </select>
+      </div>
+    </div>
+
+    <button type="button" id="addFeature" class="btn btn-outline-secondary mb-3">+ Add Another Feature</button>
+    <button type="submit" class="btn w-100" style="background-color: #2C6C93; color: white; border: none;">Submit</button>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  // Show disclaimer modal on load
+  const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'))
+  disclaimerModal.show()
+
+  document.getElementById('agreeBtn').addEventListener('click', () => {
+    disclaimerModal.hide()
+    document.getElementById('formContainer').style.display = 'block'
+  })
+
   const addBtn = document.getElementById('addFeature')
   const container = document.getElementById('featureBlocks')
   let featureCount = 1
@@ -103,13 +137,11 @@
   form.addEventListener('submit', async e => {
     e.preventDefault()
     const formData = new FormData(form)
-
     try {
       const response = await fetch(form.getAttribute('action'), {
         method: 'POST',
         body: formData
       })
-
       if (response.ok) {
         alert('Form submitted successfully!')
         form.reset()
