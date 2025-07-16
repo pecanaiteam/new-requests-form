@@ -71,7 +71,7 @@ if not os.path.exists(EXCEL_FILE):
     wb = Workbook()
     ws = wb.active
     ws.append([
-    "Dealer Name", "Email", "Phone", "Requestor Name",
+    "Requestor Name", "Dealer Name", "Email", "Phone",
     "Feature 1 Priority", "Feature 1 Description", "Feature 1 Severity", "Feature 1 Attachment",
     "Feature 2 Priority", "Feature 2 Description", "Feature 2 Severity", "Feature 2 Attachment",
     "Feature 3 Priority", "Feature 3 Description", "Feature 3 Severity", "Feature 3 Attachment"
