@@ -39,7 +39,7 @@
   <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
   <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-  <form id="requestForm" enctype="multipart/form-data" method="POST" action="http://8d8d1728fbd3.ngrok-free.app/submit">
+  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://a54686e6c2dd.ngrok-free.app/submit">
     <!-- Dealer Info -->
     <div class="mb-3">
       <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -112,16 +112,17 @@
       <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
       <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
       <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
-      <label class="form-label mt-3">Select a severity for this request (1, 2, or 3). <span class="text-danger">*</span></label>
-      <select class="form-select" name="severity_${featureCount}" required>
-        <option value="" disabled selected hidden>Select a severity</option>
-        <option value="1">1 - (Cannot Operate/Sell without)</option>
-        <option value="2">2 - (Important but Workable)</option>
-        <option value="3">3 - (Nice to Have)</option>
-      </select>
+      <label class="form-label mt-3">Severity <span class="text-danger">*</span></label>
+      <div class="btn-group w-100 severity-btn-group" role="group" data-feature="${featureCount}">
+        <input type="hidden" name="severity_${featureCount}" required>
+        <button type="button" class="btn btn-outline-danger" data-value="1">1</button>
+        <button type="button" class="btn btn-outline-warning" data-value="2">2</button>
+        <button type="button" class="btn btn-outline-secondary" data-value="3">3</button>
+      </div>
     `;
     container.appendChild(block);
     updatePriorityButtons();
+    updateSeverityButtons();
     if (featureCount >= maxFeatures) document.getElementById('addFeature').disabled = true;
   }
 
@@ -138,14 +139,36 @@
     });
   }
 
+  function updateSeverityButtons() {
+    const allSevButtons = document.querySelectorAll('.severity-btn-group .btn');
+    const selectedSeverities = Array.from(document.querySelectorAll('.severity-btn-group input')).map(i => i.value).filter(v => v);
+
+    allSevButtons.forEach(btn => {
+      const btnVal = btn.dataset.value;
+      const parentGroup = btn.closest('.severity-btn-group');
+      const currentInput = parentGroup.querySelector('input');
+      const isSelectedElsewhere = selectedSeverities.includes(btnVal) && currentInput.value !== btnVal;
+      btn.disabled = isSelectedElsewhere;
+    });
+  }
   document.addEventListener('click', e => {
     if (e.target.matches('.priority-btn-group .btn')) {
+      
       const group = e.target.closest('.priority-btn-group');
       const hiddenInput = group.querySelector('input');
       hiddenInput.value = e.target.dataset.value;
       group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
       e.target.classList.add('active');
       updatePriorityButtons();
+    }
+
+    if (e.target.matches('.severity-btn-group .btn')) {
+      const group = e.target.closest('.severity-btn-group');
+      const hiddenInput = group.querySelector('input');
+      hiddenInput.value = e.target.dataset.value;
+      group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+      e.target.classList.add('active');
+      updateSeverityButtons();
     }
   });
 
