@@ -39,7 +39,7 @@
   <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
   <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://face45fae7ca.ngrok-free.app/submit">
+  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://37e82e34b62d.ngrok-free.app/submit">
     <!-- Dealer Info -->
     <div class="mb-3">
       <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -113,16 +113,16 @@
       <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
       <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
       <label class="form-label mt-3">Severity <span class="text-danger">*</span></label>
-      <div class="btn-group w-100 severity-btn-group" role="group" data-feature="${featureCount}">
-        <input type="hidden" name="severity_${featureCount}" required>
-        <button type="button" class="btn btn-outline-danger" data-value="1">Nice to have</button>
-        <button type="button" class="btn btn-outline-warning" data-value="2">Important but Workable</button>
-        <button type="button" class="btn btn-outline-secondary" data-value="3">Can't sell/operate without it</button>
-      </div>
+      <select class="form-select severity-select" name="severity_${featureCount}" required>
+        <option value="">-- Select Severity --</option>
+        <option value="1">1 - Nice to Have</option>
+        <option value="2">2 - Important but Workable</option>
+        <option value="3">3 - Cannot Operate/Sell wihtout</option>
+      </select>
     `;
     container.appendChild(block);
     updatePriorityButtons();
-    updateSeverityButtons();
+    updateSeverityDropdowns();
     if (featureCount >= maxFeatures) document.getElementById('addFeature').disabled = true;
   }
 
@@ -139,36 +139,36 @@
     });
   }
 
-  function updateSeverityButtons() {
-    const allSevButtons = document.querySelectorAll('.severity-btn-group .btn');
-    const selectedSeverities = Array.from(document.querySelectorAll('.severity-btn-group input')).map(i => i.value).filter(v => v);
+  function updateSeverityDropdowns() {
+    const selects = document.querySelectorAll('.severity-select');
+    const selected = Array.from(selects).map(s => s.value).filter(v => v);
 
-    allSevButtons.forEach(btn => {
-      const btnVal = btn.dataset.value;
-      const parentGroup = btn.closest('.severity-btn-group');
-      const currentInput = parentGroup.querySelector('input');
-      const isSelectedElsewhere = selectedSeverities.includes(btnVal) && currentInput.value !== btnVal;
-      btn.disabled = isSelectedElsewhere;
+    selects.forEach(select => {
+      const currentValue = select.value;
+      const options = select.querySelectorAll('option');
+
+      options.forEach(option => {
+        const val = option.value;
+        option.disabled = val && selected.includes(val) && val !== currentValue;
+      });
     });
   }
+
+  // ✅ Added to handle severity dropdown updates on change
+  document.addEventListener('change', e => {
+    if (e.target.matches('.severity-select')) {
+      updateSeverityDropdowns();
+    }
+  });
+
   document.addEventListener('click', e => {
     if (e.target.matches('.priority-btn-group .btn')) {
-      
       const group = e.target.closest('.priority-btn-group');
       const hiddenInput = group.querySelector('input');
       hiddenInput.value = e.target.dataset.value;
       group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
       e.target.classList.add('active');
       updatePriorityButtons();
-    }
-
-    if (e.target.matches('.severity-btn-group .btn')) {
-      const group = e.target.closest('.severity-btn-group');
-      const hiddenInput = group.querySelector('input');
-      hiddenInput.value = e.target.dataset.value;
-      group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
-      e.target.classList.add('active');
-      updateSeverityButtons();
     }
   });
 
