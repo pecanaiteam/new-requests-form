@@ -39,7 +39,7 @@
   <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
   <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://a54686e6c2dd.ngrok-free.app/submit">
+  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://face45fae7ca.ngrok-free.app/submit">
     <!-- Dealer Info -->
     <div class="mb-3">
       <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -115,9 +115,9 @@
       <label class="form-label mt-3">Severity <span class="text-danger">*</span></label>
       <div class="btn-group w-100 severity-btn-group" role="group" data-feature="${featureCount}">
         <input type="hidden" name="severity_${featureCount}" required>
-        <button type="button" class="btn btn-outline-danger" data-value="1">1</button>
-        <button type="button" class="btn btn-outline-warning" data-value="2">2</button>
-        <button type="button" class="btn btn-outline-secondary" data-value="3">3</button>
+        <button type="button" class="btn btn-outline-danger" data-value="1">Nice to have</button>
+        <button type="button" class="btn btn-outline-warning" data-value="2">Important but Workable</button>
+        <button type="button" class="btn btn-outline-secondary" data-value="3">Can't sell/operate without it</button>
       </div>
     `;
     container.appendChild(block);
