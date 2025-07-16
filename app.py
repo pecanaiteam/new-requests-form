@@ -96,10 +96,25 @@ def submit():
             form.get("email", ""),
             form.get("phone", "")
         ]
+
+        #  Define maps outside the loop (so they aren't redefined every time)
+        priority_map = {"1": "Urgent", "2": "Normal", "3": "Optional"}
+        severity_map = {
+            "1": "Cannot Operate/Sell without",
+            "2": "Important but Workable",
+            "3": "Nice to Have"
+        }
+
         for i in range(1, 4):
-            priority = form.get(f"priority_{i}", "")
+            #  Use the maps to convert raw form values to readable labels
+            priority_raw = form.get(f"priority_{i}", "")
+            priority = priority_map.get(priority_raw, priority_raw)
+
             desc = form.get(f"feature_description_{i}", "")
-            sev = form.get(f"severity_{i}", "")
+
+            severity_raw = form.get(f"severity_{i}", "")
+            sev = severity_map.get(severity_raw, severity_raw)
+
             upload = files.get(f"attachment_{i}")
             fname = ""
             if upload and upload.filename:
@@ -107,8 +122,8 @@ def submit():
                 upload_path = os.path.join(UPLOAD_FOLDER, fname)
                 upload.save(upload_path)
                 print(f"Saved attachment {i} to:", upload_path)
-            row.extend([priority, desc, sev, fname])
 
+            row.extend([priority, desc, sev, fname])  #  Add to row each loop
 
         print("Appending row:", row)
         print("Using Excel path:", EXCEL_FILE)
@@ -122,6 +137,7 @@ def submit():
     except Exception as e:
         print("Error occurred:", str(e))
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 
 if __name__ == "__main__":
