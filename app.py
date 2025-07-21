@@ -6,6 +6,7 @@ from flask_cors import CORS
 from openpyxl import Workbook, load_workbook
 from werkzeug.utils import secure_filename
 from github import Github, GithubException
+from datetime import datetime
 
 # start an http‐only ngrok tunnel on port 5000
 ngrok.kill()
@@ -118,12 +119,25 @@ def submit():
             upload = files.get(f"attachment_{i}")
             fname = ""
             if upload and upload.filename:
-                fname = secure_filename(upload.filename)
-                upload_path = os.path.join(UPLOAD_FOLDER, fname)
-                upload.save(upload_path)
-                print(f"Saved attachment {i} to:", upload_path)
+                # 1. get dealer name and sanitize it
+                raw_dealer = form.get("dealer_name", "dealer")
+                dealer = secure_filename(raw_dealer.replace(" ", "_"))
+ 
+                # 2. build date string 
+                date_str = datetime.now().strftime("%Y%m%d") 
+ 
+                # 3. extract original extension 
+                _, ext = os.path.splitext(upload.filename) 
+ 
+                # 4. compose new filename: dealer_feature{n}_{YYYYMMDD}.ext 
+                fname = secure_filename(f"{dealer}_feature{i}_{date_str}{ext}") 
+ 
+                # 5. save 
+                upload_path = os.path.join(UPLOAD_FOLDER, fname) 
+                upload.save(upload_path) 
+                print(f"Saved attachment {i} as:", upload_path)
 
-            row.extend([priority, desc, sev, fname])  #  Add to row each loop
+                row.extend([priority, desc, sev, fname])  #  Add to row each loop
 
         print("Appending row:", row)
         print("Using Excel path:", EXCEL_FILE)
