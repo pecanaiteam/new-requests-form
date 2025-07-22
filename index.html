@@ -17,6 +17,17 @@
 </head>
 <body class="bg-light">
 
+<!-- Login Screen -->
+<div id="loginScreen" class="vh-100 d-flex flex-column justify-content-center align-items-center bg-light">
+  <div class="card shadow p-4" style="min-width: 320px;">
+    <h5 class="text-center mb-3">Login</h5>
+    <input type="text" id="username" class="form-control mb-2" placeholder="Username" required />
+    <input type="password" id="password" class="form-control mb-2" placeholder="Password" required />
+    <button id="loginBtn" class="btn btn-primary w-100">Login</button>
+    <div id="loginError" class="text-danger mt-2" style="display: none;">Invalid credentials</div>
+  </div>
+</div>
+
 <!-- Disclaimer Modal -->
 <div class="modal fade" id="disclaimerModal" tabindex="-1" aria-labelledby="disclaimerLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered">
@@ -39,8 +50,7 @@
   <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
   <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
 
-  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://1ff35e66aa40.ngrok-free.app/submit">
-    <!-- Dealer Info -->
+  <form id="requestForm" enctype="multipart/form-data" method="POST" action="/submit">
     <div class="mb-3">
       <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
       <input type="text" class="form-control" name="requestor_name" required />
@@ -58,10 +68,7 @@
       <input type="tel" class="form-control" name="phone" />
     </div>
 
-    <!-- Features -->
-    <div id="featureBlocks">
-      <!-- Feature block will be added dynamically by JS -->
-    </div>
+    <div id="featureBlocks"></div>
 
     <button type="button" id="addFeature" class="btn btn-outline-secondary mb-3">+ Add Another Feature</button>
     <button type="submit" class="btn w-100" style="background-color: #2C6C93; color: white; border: none;">Submit</button>
@@ -70,131 +77,151 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-  const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'));
-  disclaimerModal.show();
-  document.getElementById('agreeBtn').addEventListener('click', () => {
-    disclaimerModal.hide();
-    document.getElementById('formContainer').style.display = 'block';
-    addFeatureBlock();
-  });
+  document.addEventListener('DOMContentLoaded', () => {
+    const loginScreen = document.getElementById('loginScreen');
+    const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'));
+    const formContainer = document.getElementById('formContainer');
+    const loginError = document.getElementById('loginError');
 
-  const container = document.getElementById('featureBlocks');
-  let featureCount = 0;
-  const maxFeatures = 3;
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
 
-  document.getElementById('addFeature').addEventListener('click', () => {
-    if (featureCount < maxFeatures) addFeatureBlock();
-  });
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password })
+      });
 
-  function addFeatureBlock() {
-    featureCount++;
-    const block = document.createElement('div');
-    block.className = 'feature-block mb-4';
-    block.dataset.index = featureCount;
-    block.innerHTML = `
-      <h5 class="mt-4 mb-3">Feature ${featureCount}</h5>
-      <div class="row g-2 align-items-end">
-        <div class="col-12 col-md-8">
-          <label class="form-label">Feature Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" name="feature_name_${featureCount}" required>
-        </div>
-        <div class="col-12 col-md-4">
-          <label class="form-label">Feature Priority <span class="text-danger">*</span></label>
-          <div class="btn-group w-100 priority-btn-group" role="group" data-feature="${featureCount}">
-            <input type="hidden" name="priority_${featureCount}" required>
-            <button type="button" class="btn btn-outline-secondary" data-value="1">Urgent</button>
-            <button type="button" class="btn btn-outline-secondary" data-value="2">Normal</button>
-            <button type="button" class="btn btn-outline-secondary" data-value="3">Optional</button>
+      if (res.ok) {
+        loginScreen.style.display = 'none';
+        disclaimerModal.show();
+        loginError.style.display = 'none';
+      } else {
+        loginError.style.display = 'block';
+      }
+    });
+
+    document.getElementById('agreeBtn').addEventListener('click', () => {
+      disclaimerModal.hide();
+      formContainer.style.display = 'block';
+      addFeatureBlock();
+    });
+
+    const container = document.getElementById('featureBlocks');
+    let featureCount = 0;
+    const maxFeatures = 3;
+
+    document.getElementById('addFeature').addEventListener('click', () => {
+      if (featureCount < maxFeatures) addFeatureBlock();
+    });
+
+    function addFeatureBlock() {
+      featureCount++;
+      const block = document.createElement('div');
+      block.className = 'feature-block mb-4';
+      block.dataset.index = featureCount;
+      block.innerHTML = `
+        <h5 class="mt-4 mb-3">Feature ${featureCount}</h5>
+        <div class="row g-2 align-items-end">
+          <div class="col-12 col-md-8">
+            <label class="form-label">Feature Name <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="feature_name_${featureCount}" required>
+          </div>
+          <div class="col-12 col-md-4">
+            <label class="form-label">Feature Priority <span class="text-danger">*</span></label>
+            <div class="btn-group w-100 priority-btn-group" role="group" data-feature="${featureCount}">
+              <input type="hidden" name="priority_${featureCount}" required>
+              <button type="button" class="btn btn-outline-secondary" data-value="1">Urgent</button>
+              <button type="button" class="btn btn-outline-secondary" data-value="2">Normal</button>
+              <button type="button" class="btn btn-outline-secondary" data-value="3">Optional</button>
+            </div>
           </div>
         </div>
-      </div>
-      <label class="form-label mt-3">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
-      <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
-      <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
-      <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
-      <label class="form-label mt-3">Severity <span class="text-danger">*</span></label>
-      <select class="form-select severity-select" name="severity_${featureCount}" required>
-        <option value="">-- Select Severity --</option>
-        <option value="1">1 - Nice to Have</option>
-        <option value="2">2 - Important but Workable</option>
-        <option value="3">3 - Cannot Operate/Sell without</option>
-      </select>
-    `;
-    container.appendChild(block);
-    updatePriorityButtons();
-    updateSeverityDropdowns();
-    if (featureCount >= maxFeatures) document.getElementById('addFeature').disabled = true;
-  }
-
-  function updatePriorityButtons() {
-    const allButtons = document.querySelectorAll('.priority-btn-group .btn');
-    const selectedValues = Array.from(document.querySelectorAll('.priority-btn-group input')).map(i => i.value).filter(v => v);
-
-    allButtons.forEach(btn => {
-      const btnVal = btn.dataset.value;
-      const parentGroup = btn.closest('.priority-btn-group');
-      const currentInput = parentGroup.querySelector('input');
-      const isSelectedElsewhere = selectedValues.includes(btnVal) && currentInput.value !== btnVal;
-      btn.disabled = isSelectedElsewhere;
-    });
-  }
-
-  function updateSeverityDropdowns() {
-    const selects = document.querySelectorAll('.severity-select');
-    const selected = Array.from(selects).map(s => s.value).filter(v => v);
-
-    selects.forEach(select => {
-      const currentValue = select.value;
-      const options = select.querySelectorAll('option');
-
-      options.forEach(option => {
-        const val = option.value;
-        option.disabled = val && selected.includes(val) && val !== currentValue;
-      });
-    });
-  }
-
-  // ✅ Added to handle severity dropdown updates on change
-  document.addEventListener('change', e => {
-    if (e.target.matches('.severity-select')) {
-      updateSeverityDropdowns();
-    }
-  });
-
-  document.addEventListener('click', e => {
-    if (e.target.matches('.priority-btn-group .btn')) {
-      const group = e.target.closest('.priority-btn-group');
-      const hiddenInput = group.querySelector('input');
-      hiddenInput.value = e.target.dataset.value;
-      group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
-      e.target.classList.add('active');
+        <label class="form-label mt-3">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
+        <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
+        <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
+        <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
+        <label class="form-label mt-3">Severity <span class="text-danger">*</span></label>
+        <select class="form-select severity-select" name="severity_${featureCount}" required>
+          <option value="">-- Select Severity --</option>
+          <option value="1">1 - Nice to Have</option>
+          <option value="2">2 - Important but Workable</option>
+          <option value="3">3 - Cannot Operate/Sell without</option>
+        </select>
+      `;
+      container.appendChild(block);
       updatePriorityButtons();
+      updateSeverityDropdowns();
+      if (featureCount >= maxFeatures) document.getElementById('addFeature').disabled = true;
     }
-  });
 
-  document.getElementById('requestForm').addEventListener('submit', async e => {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    try {
-      const response = await fetch(form.getAttribute('action'), {
-        method: 'POST',
-        body: formData
+    function updatePriorityButtons() {
+      const allButtons = document.querySelectorAll('.priority-btn-group .btn');
+      const selectedValues = Array.from(document.querySelectorAll('.priority-btn-group input')).map(i => i.value).filter(v => v);
+
+      allButtons.forEach(btn => {
+        const btnVal = btn.dataset.value;
+        const parentGroup = btn.closest('.priority-btn-group');
+        const currentInput = parentGroup.querySelector('input');
+        const isSelectedElsewhere = selectedValues.includes(btnVal) && currentInput.value !== btnVal;
+        btn.disabled = isSelectedElsewhere;
       });
-      if (response.ok) {
-        alert('Form submitted successfully!');
-        form.reset();
-        container.innerHTML = '';
-        featureCount = 0;
-        addFeatureBlock();
-        document.getElementById('addFeature').disabled = false;
-      } else {
-        const err = await response.json();
-        alert('Submission failed: ' + (err.message || response.statusText));
-      }
-    } catch (error) {
-      alert('Network error: ' + error.message);
     }
+
+    function updateSeverityDropdowns() {
+      const selects = document.querySelectorAll('.severity-select');
+      const selected = Array.from(selects).map(s => s.value).filter(v => v);
+
+      selects.forEach(select => {
+        const currentValue = select.value;
+        const options = select.querySelectorAll('option');
+        options.forEach(option => {
+          const val = option.value;
+          option.disabled = val && selected.includes(val) && val !== currentValue;
+        });
+      });
+    }
+
+    document.addEventListener('change', e => {
+      if (e.target.matches('.severity-select')) updateSeverityDropdowns();
+    });
+
+    document.addEventListener('click', e => {
+      if (e.target.matches('.priority-btn-group .btn')) {
+        const group = e.target.closest('.priority-btn-group');
+        const hiddenInput = group.querySelector('input');
+        hiddenInput.value = e.target.dataset.value;
+        group.querySelectorAll('.btn').forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+        updatePriorityButtons();
+      }
+    });
+
+    document.getElementById('requestForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const form = e.target;
+      const formData = new FormData(form);
+      try {
+        const response = await fetch(form.getAttribute('action'), {
+          method: 'POST',
+          body: formData
+        });
+        if (response.ok) {
+          alert('Form submitted successfully!');
+          form.reset();
+          container.innerHTML = '';
+          featureCount = 0;
+          addFeatureBlock();
+          document.getElementById('addFeature').disabled = false;
+        } else {
+          const err = await response.json();
+          alert('Submission failed: ' + (err.message || response.statusText));
+        }
+      } catch (error) {
+        alert('Network error: ' + error.message);
+      }
+    });
   });
 </script>
 </body>
