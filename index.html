@@ -19,13 +19,13 @@
 
 <!-- Login Screen -->
 <div id="loginScreen" class="vh-100 d-flex flex-column justify-content-center align-items-center bg-light">
-  <div class="card shadow p-4" style="min-width: 320px;">
+  <form id="loginForm" class="card shadow p-4" style="min-width: 320px;" onsubmit="return false;">
     <h5 class="text-center mb-3">Login</h5>
     <input type="text" id="username" class="form-control mb-2" placeholder="Username" required />
     <input type="password" id="password" class="form-control mb-2" placeholder="Password" required />
-    <button id="loginBtn" class="btn btn-primary w-100">Login</button>
+    <button type="submit" id="loginBtn" class="btn btn-primary w-100">Login</button>
     <div id="loginError" class="text-danger mt-2" style="display: none;">Invalid credentials</div>
-  </div>
+  </form>
 </div>
 
 <!-- Disclaimer Modal -->
@@ -82,8 +82,13 @@
     const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'));
     const formContainer = document.getElementById('formContainer');
     const loginError = document.getElementById('loginError');
+    const container = document.getElementById('featureBlocks');
+    let featureCount = 0;
+    const maxFeatures = 3;
 
-    document.getElementById('loginBtn').addEventListener('click', async () => {
+    // ✅ Login form handler (handles enter key or button click)
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
@@ -107,10 +112,6 @@
       formContainer.style.display = 'block';
       addFeatureBlock();
     });
-
-    const container = document.getElementById('featureBlocks');
-    let featureCount = 0;
-    const maxFeatures = 3;
 
     document.getElementById('addFeature').addEventListener('click', () => {
       if (featureCount < maxFeatures) addFeatureBlock();
