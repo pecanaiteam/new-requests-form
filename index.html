@@ -34,40 +34,52 @@
   </div>
 </div>
 
-<!-- Main Form Content -->
-<div class="container p-4" id="formContainer" style="display: none;">
-  <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
-  <h4 class="text-center mb-2" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
-
-  <form id="requestForm" enctype="multipart/form-data" method="POST" action="https://e2e216ed19f3.ngrok-free.app/submit">
-    <!-- Dealer Info -->
-    <div class="mb-3">
-      <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" name="requestor_name" required />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
-      <input type="text" class="form-control" name="dealer_name" required />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Email <span class="text-danger">*</span></label>
-      <input type="email" class="form-control" name="email" required />
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Phone Number (Optional)</label>
-      <input type="tel" class="form-control" name="phone" />
-    </div>
-
-    <!-- Features -->
-    <div id="featureBlocks">
-      <!-- Feature block will be added dynamically by JS -->
-    </div>
-
-    <button type="button" id="addFeature" class="btn btn-outline-secondary mb-3">+ Add Another Feature</button>
-    <button type="submit" class="btn w-100" style="background-color: #2C6C93; color: white; border: none;">Submit</button>
-  </form>
+<!-- Step 1 -->
+<div class="step" id="step1">
+  <div class="container p-4" id="formContainer" style="display: none;">
+    <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
+  <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://2740f74b18e3.ngrok-free.app/submit">
+  <!-- Dealer Info -->
+  <div class="mb-3">
+    <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
+    <input type="text" class="form-control" name="requestor_name" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
+    <input type="text" class="form-control" name="dealer_name" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Email <span class="text-danger">*</span></label>
+    <input type="email" class="form-control" name="email" required />
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Phone Number (Optional)</label>
+    <input type="tel" class="form-control" name="phone" />
+  </div>
+
+  <!-- Features -->
+  <div id="featureBlocks">
+    <!-- Feature block will be added dynamically by JS -->
+  </div>
+
+  <button type="button" id="addFeature" class="btn btn-outline-secondary mb-3">+ Add Another Feature</button>
+  <button type="submit" class="btn w-100" style="background-color: #2C6C93; color: white; border: none;">Submit</button>
+</form>
+
+  </div>
+</div>
+<!-- Step 2 (blank) -->
+<div class="step" id="step2" style="display: none;">
+  <div class="container p-4">
+    <h4 class="mb-3">Requests in Development</h4>
+    <div id="masterListContainer">Loading list...</div>
+  </div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'));
@@ -196,6 +208,58 @@
       alert('Network error: ' + error.message);
     }
   });
+//  Place your nextStep function here
+let currentStep = 0;
+let steps = [];
+function nextStep() {
+    if (steps.length === 0) steps = Array.from(document.querySelectorAll('.step'));
+
+  if (currentStep < steps.length - 1) {
+    steps[currentStep].style.display = 'none';
+    currentStep++;
+    steps[currentStep].style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    //  Correctly placed here
+    if (currentStep === 1) loadMasterList();
+  }
+}
+
+
+//  Add this below nextStep
+async function loadMasterList() {
+  const container = document.getElementById('masterListContainer');
+  try {
+    const res = await fetch('master-list.json');
+    const data = await res.json();
+
+    const html = `
+      <table class="table table-bordered table-striped">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Status</th>
+            <th>Summary</th>
+            <th>Priority</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${data.map(row => `
+            <tr>
+              <td>${row.feature_name}</td>
+              <td>${row.status}</td>
+              <td>${row.summary}</td>
+              <td>${row.priority}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<div class="alert alert-danger">Failed to load master list.</div>`;
+  }
+}
 </script>
 </body>
 </html>
