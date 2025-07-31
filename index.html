@@ -43,7 +43,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://55626e2820b5.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://5af3b24a0b19.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -231,6 +231,10 @@ async function loadMasterList() {
   const container = document.getElementById('masterListContainer');
   try {
     const res = await fetch('https://raw.githubusercontent.com/pecanaiteam/new-requests-form/main/master-list.json');
+    if (!res.ok) {
+      console.error("Fetch failed:", res.status, res.statusText);
+      throw new Error("Response not OK");
+    }
     const data = await res.json();
 
     const html = `
@@ -257,6 +261,7 @@ async function loadMasterList() {
     `;
     container.innerHTML = html;
   } catch (err) {
+    console.error("Error loading master list:", err); // 👈 Add this
     container.innerHTML = `<div class="alert alert-danger">Failed to load master list.</div>`;
   }
 }
