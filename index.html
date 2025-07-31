@@ -43,7 +43,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://d75137ff2ca6.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://73fe30e8c1ac.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -76,7 +76,7 @@
 <!-- Step 2 (blank) -->
 <div class="step" id="step2" style="display: none;">
   <div class="container p-4">
-    <h4 class="mb-3">Requests in Development</h4>
+    <h4 class="mb-3" style="color: #2C6C93;">Requests in Development</h4>
     <div id="masterListContainer">Loading list...</div>
   </div>
 </div>
@@ -233,23 +233,20 @@ async function loadMasterList() {
     const res = await fetch('https://raw.githubusercontent.com/pecanaiteam/new-requests-form/main/master_list2.json');
     const dataObj = await res.json();
 
-    // ✅ Access the inner array using the top-level key
     const data = Array.isArray(dataObj) ? dataObj : dataObj["Feature Timeline Confidential 1"];
-
-
     if (!Array.isArray(data)) throw new Error("Expected an array");
 
     const html = `
-      <table class="table table-bordered table-striped">
-        <thead>
+      <table class="table table-bordered">
+        <thead style="background-color: #2C6C93; color: white;">
           <tr>
             <th>Feature</th>
             <th>Status (Due Date)</th>
           </tr>
         </thead>
         <tbody>
-          ${data.map(row => `
-            <tr>
+          ${data.map((row, i) => `
+            <tr style="${i % 2 === 1 ? 'background-color: #f8f9fa;' : 'background-color: #e8eff7;'}">
               <td>${row["Summary"] || ""}</td>
               <td>${row["Inferred due date"] || ""}</td>
             </tr>
@@ -263,6 +260,7 @@ async function loadMasterList() {
     container.innerHTML = `<div class="alert alert-danger">Failed to load master list.</div>`;
   }
 }
+
 </script>
 </body>
 </html>
