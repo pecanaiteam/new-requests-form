@@ -43,7 +43,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://f8935508f415.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://52dbd2faa808.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -230,7 +230,7 @@ function nextStep() {
 async function loadMasterList() {
   const container = document.getElementById('masterListContainer');
   try {
-    const res = await fetch('https://raw.githubusercontent.com/pecanaiteam/new-requests-form/main/master-list2.json');
+    const res = await fetch('https://raw.githubusercontent.com/pecanaiteam/new-requests-form/main/master_list2.json');
     const dataObj = await res.json();
 
     // ✅ Access the inner array using the top-level key
