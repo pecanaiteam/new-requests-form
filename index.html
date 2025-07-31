@@ -43,7 +43,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://52dbd2faa808.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://57320e9f2274.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -234,7 +234,8 @@ async function loadMasterList() {
     const dataObj = await res.json();
 
     // ✅ Access the inner array using the top-level key
-    const data = dataObj["Feature Timeline Confidential 1"];
+    const data = Array.isArray(dataObj) ? dataObj : dataObj["Feature Timeline Confidential 1"];
+
 
     if (!Array.isArray(data)) throw new Error("Expected an array");
 
