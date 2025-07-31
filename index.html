@@ -43,7 +43,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://73fe30e8c1ac.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://80121ac2de33.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -74,12 +74,26 @@
   </div>
 </div>
 <!-- Step 2 (blank) -->
+<!-- Step 2 -->
 <div class="step" id="step2" style="display: none;">
   <div class="container p-4">
+
+    <!-- Top-left Back Button -->
+    <div class="d-flex justify-content-start mb-3">
+      <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">← Back</button>
+    </div>
+
     <h4 class="mb-3" style="color: #2C6C93;">Requests in Development</h4>
     <div id="masterListContainer">Loading list...</div>
+
+    <!-- Bottom-left Back Button -->
+    <div class="d-flex justify-content-start mt-4">
+      <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">← Back</button>
+    </div>
+
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'));
@@ -222,6 +236,16 @@ function nextStep() {
 
     //  Correctly placed here
     if (currentStep === 1) loadMasterList();
+  }
+}
+function prevStep() {
+  if (steps.length === 0) steps = Array.from(document.querySelectorAll('.step'));
+
+  if (currentStep > 0) {
+    steps[currentStep].style.display = 'none';
+    currentStep--;
+    steps[currentStep].style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
