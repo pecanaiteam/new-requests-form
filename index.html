@@ -12,7 +12,13 @@
     .priority-btn-group .btn.active {
       background-color: #2C6C93;
       color: white;
-    }
+ }
+    /* === Added for feature vote table === */
+    .feature-table th, .feature-table td { text-align: center; vertical-align: middle; }
+    .feature-table th:first-child, .feature-table td:first-child { text-align: left; width: 48%; }
+    .feature-table th:nth-child(2), .feature-table td:nth-child(2) { width: 16%; }
+    .feature-table th:nth-child(3), .feature-table th:nth-child(4), .feature-table th:nth-child(5) { width: 12%; }
+    .vote-count { display: none !important; }
   </style>
 </head>
 <body class="bg-light">
@@ -43,7 +49,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://fb3ce7beae4d.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://1525f1ff4cc4.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -96,9 +102,10 @@
 
     <div id="masterListContainer">Loading list...</div>
 
-    <!-- Bottom-left Back Button -->
-    <div class="d-flex justify-content-start mt-4">
-      <button type="button" class="btn btn-outline-secondary" onclick="prevStep()">← Back</button>
+    <!-- Bottom-left Back Button / Submit -->
+    <div class="d-flex mt-4">
+      <button type="button" class="btn btn-outline-secondary me-auto" onclick="prevStep()">← Back</button>
+      <button type="button" id="submitVotes" class="btn btn-primary">Submit</button>
     </div>
   <footer class="text-center mt-5 text-muted" style="font-size: 0.9rem;">
     Created by Cristhoper Ambuludi &amp; Daniel Shifrin
@@ -274,7 +281,9 @@ async function loadMasterList() {
     if (!Array.isArray(data)) throw new Error("Expected an array");
 
     masterData = data; // Save globally
-    renderMasterList(masterData); // Initial render
+    const features = augmentVotes({ "Feature Timeline Confidential 1": masterData });
+    renderMasterListRadios(features);
+
   } catch (err) {
     console.error("Error loading master list:", err);
     container.innerHTML = `<div class="alert alert-danger">Failed to load master list.</div>`;
@@ -317,9 +326,225 @@ function filterMasterList() {
     return allText.includes(query);
   });
 
-  renderMasterList(filtered);
+  const features = augmentVotes({ "Feature Timeline Confidential 1": filtered });
+  renderMasterListRadios(features);
+
 }
 
+// ===== Backend (optional) =====
+const BACKEND_URL = ""; // e.g. "https://api.yoursite.com/feature-vote"
+
+// ===== Data normalizer (works with your nested JSON) =====
+function augmentVotes(rootObj) {
+  const arr = Array.isArray(rootObj) ? rootObj : (rootObj?.["Feature Timeline Confidential 1"] || []);
+  return arr.map((row, i) => {
+    const summary = row["Summary"] ?? `Feature ${i+1}`;
+    const id = row.id || `feat_${slugify(summary)}`.slice(0, 64);
+    return {
+      ...row,
+      id,
+      votes_no:   toInt(row.votes_no),
+      votes_nice: toInt(row.votes_nice),
+      votes_must: toInt(row.votes_must)
+    };
+  });
+}
+
+// ===== New renderer: 3 aligned radio columns + counters =====
+function renderMasterListRadios(dataArray) {
+  const el = document.getElementById('masterListContainer');
+  if (!el) return;
+
+  const header = `
+    <table class="table table-bordered table-sm feature-table">
+      <thead style="background-color:#2C6C93;color:white;">
+        <tr>
+          <th>Feature</th>
+          <th>Status (Due Date)</th>
+          <th>No interest</th>
+          <th>I’ll be nice</th>
+          <th>Must have</th>
+        </tr>
+      </thead>
+      <tbody>
+  `;
+
+  const rows = dataArray.map((row, i) => {
+    const summary = row["Summary"] ?? "";
+    const due     = row["Inferred due date"] ?? "—";
+    const id      = row.id;
+    const name    = `pref_${id}`;
+
+    const prev = localStorage.getItem(name); // "no" | "nice" | "must" | null
+    const checked = {
+      no:   prev === "no"   ? "checked" : "",
+      nice: prev === "nice" ? "checked" : "",
+      must: prev === "must" ? "checked" : ""
+    };
+
+    const alt = (i % 2 === 1) ? ' style="background:#f8f9fa;"' : '';
+    const c_no   = toInt(row.votes_no);
+    const c_nice = toInt(row.votes_nice);
+    const c_must = toInt(row.votes_must);
+
+    return `
+      <tr${alt} data-feature-id="${escapeHtml(id)}">
+        <td class="align-middle">${escapeHtml(summary)}</td>
+        <td class="align-middle">${escapeHtml(due)}</td>
+
+        <td class="align-middle">
+          <input class="pref-dot" type="radio" name="${escapeHtml(name)}" value="no" ${checked.no}
+                 aria-label="No interest for ${escapeHtml(summary)}">
+          <span class="vote-count" id="cnt_${id}_no">${c_no}</span>
+        </td>
+
+        <td class="align-middle">
+          <input class="pref-dot" type="radio" name="${escapeHtml(name)}" value="nice" ${checked.nice}
+                 aria-label="I'll be nice for ${escapeHtml(summary)}">
+          <span class="vote-count" id="cnt_${id}_nice">${c_nice}</span>
+        </td>
+
+        <td class="align-middle">
+          <input class="pref-dot" type="radio" name="${escapeHtml(name)}" value="must" ${checked.must}
+                 aria-label="Must have for ${escapeHtml(summary)}">
+          <span class="vote-count" id="cnt_${id}_must">${c_must}</span>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  el.innerHTML = header + rows + `</tbody></table>`;
+}
+
+// ===== Collect selected radios from the table =====
+function collectVotes() {
+  const rows = Array.from(document.querySelectorAll('#masterListContainer tbody tr[data-feature-id]'));
+  const votes = [];
+  rows.forEach(row => {
+    const id = row.getAttribute('data-feature-id');
+    const checked = row.querySelector('input.pref-dot:checked');
+    if (id && checked) {
+      votes.push({ id, choice: checked.value }); // choice is "no" | "nice" | "must"
+    }
+  });
+  return votes;
+}
+
+// ===== Submit all selections in one request =====
+const submitBtn = document.getElementById('submitVotes');
+if (submitBtn) {
+  submitBtn.addEventListener('click', async () => {
+    const votes = collectVotes(); // can be empty (allowed)
+    // Optional: confirm if nothing is selected
+    // if (votes.length === 0) {
+    //   if (!confirm('No selections were made. Submit anyway?')) return;
+    // }
+
+    if (!BACKEND_URL) {
+      alert('Thanks! Your selections were recorded locally.\n(Backend URL is not configured, so nothing was submitted to the server.)');
+      return;
+    }
+
+    const originalText = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        // You can add extra metadata here if needed (e.g., user, timestamp)
+        body: JSON.stringify({ votes }) 
+      });
+
+      if (!res.ok) {
+        const msg = await res.text().catch(()=>'');
+        throw new Error(msg || `HTTP ${res.status}`);
+      }
+
+      // Optional: clear localStorage so the next person starts fresh on this device
+      // localStorage.clear();
+
+      alert('Thanks! Your selections were submitted.');
+    } catch (err) {
+      console.warn('Submit failed:', err);
+      alert('Submission failed. Please try again.');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
+    }
+  });
+}
+
+// ===== Change handler (optimistic UI + optional backend) =====
+document.addEventListener('change', async (e) => {
+  if (!e.target.classList || !e.target.classList.contains('pref-dot')) return;
+
+  const input = e.target;
+  const rowEl = input.closest('tr');
+  const featureId = rowEl?.getAttribute('data-feature-id');
+  const choice = input.value; // "no" | "nice" | "must"
+  const groupName = input.getAttribute('name');
+  if (!featureId || !groupName) return;
+
+  const prevChoice = localStorage.getItem(groupName); // may be null
+
+  // Optimistic UI
+  if (prevChoice !== choice) {
+    if (prevChoice) adjustCount(featureId, prevChoice, -1);
+    adjustCount(featureId, choice, +1);
+    localStorage.setItem(groupName, choice);
+  }
+
+  // Persist (optional)
+  if (BACKEND_URL) {
+    try {
+      const res = await fetch(BACKEND_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: featureId, choice, prev_choice: prevChoice })
+      });
+      if (res.ok) {
+        const json = await res.json(); // {votes_no, votes_nice, votes_must}
+        setCounts(featureId, json.votes_no, json.votes_nice, json.votes_must);
+      } else {
+        if (prevChoice) adjustCount(featureId, prevChoice, +1);
+        adjustCount(featureId, choice, -1);
+        localStorage.setItem(groupName, prevChoice ?? "");
+        console.warn('Vote API failed', await res.text());
+      }
+    } catch (err) {
+      console.warn('Vote API error', err);
+    }
+  }
+});
+
+// ===== Helpers =====
+function adjustCount(id, which, delta) {
+  const el = document.getElementById(`cnt_${id}_${which}`);
+  if (!el) return;
+  const n = toInt(el.textContent) + delta;
+  el.textContent = Math.max(0, n);
+}
+function setCounts(id, cNo, cNice, cMust) {
+  const map = { no: cNo, nice: cNice, must: cMust };
+  Object.entries(map).forEach(([k,v]) => {
+    const el = document.getElementById(`cnt_${id}_${k}`);
+    if (el) el.textContent = toInt(v);
+  });
+}
+function toInt(v) { return Number.parseInt(v ?? 0, 10) || 0; }
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&','&amp;').replaceAll('<','&lt;')
+    .replaceAll('>','&gt;').replaceAll('"','&quot;')
+    .replaceAll("'","&#39;");
+}
+function slugify(s) {
+  return String(s).toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+    .slice(0, 60) || 'item';
+}
 
 </script>
 </body>
