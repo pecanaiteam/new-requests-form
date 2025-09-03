@@ -49,7 +49,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://fd8fe0be4a0f.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://232bd7338a4c.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -332,7 +332,7 @@ function filterMasterList() {
 }
 
 // ===== Backend (optional) =====
-const BACKEND_URL = "https://fd8fe0be4a0f.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
+const BACKEND_URL = "https://232bd7338a4c.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
 
 // ===== Data normalizer (works with your nested JSON) =====
 function augmentVotes(rootObj) {
@@ -375,12 +375,8 @@ function renderMasterListRadios(dataArray) {
     const id      = row.id;
     const name    = `pref_${id}`;
 
-    const prev = localStorage.getItem(name); // "no" | "nice" | "must" | null
-    const checked = {
-      no:   prev === "no"   ? "checked" : "",
-      nice: prev === "nice" ? "checked" : "",
-      must: prev === "must" ? "checked" : ""
-    };
+    const checked = { no: "", nice: "", must: "" }; // never pre-check
+
 
     const alt = (i % 2 === 1) ? ' style="background:#f8f9fa;"' : '';
     const c_no   = toInt(row.votes_no);
@@ -414,6 +410,11 @@ function renderMasterListRadios(dataArray) {
   }).join('');
 
   el.innerHTML = header + rows + `</tbody></table>`;
+// make sure nothing is pre-selected and disable browser autofill
+  el.querySelectorAll('input.pref-dot').forEach(r => {
+  r.checked = false;
+  r.autocomplete = 'off';
+});
 }
 
 // ===== Collect selected radios from the table =====
@@ -476,48 +477,6 @@ if (submitBtn) {
   });
 }
 
-// ===== Change handler (optimistic UI + optional backend) =====
-document.addEventListener('change', async (e) => {
-  if (!e.target.classList || !e.target.classList.contains('pref-dot')) return;
-
-  const input = e.target;
-  const rowEl = input.closest('tr');
-  const featureId = rowEl?.getAttribute('data-feature-id');
-  const choice = input.value; // "no" | "nice" | "must"
-  const groupName = input.getAttribute('name');
-  if (!featureId || !groupName) return;
-
-  const prevChoice = localStorage.getItem(groupName); // may be null
-
-  // Optimistic UI
-  if (prevChoice !== choice) {
-    if (prevChoice) adjustCount(featureId, prevChoice, -1);
-    adjustCount(featureId, choice, +1);
-    localStorage.setItem(groupName, choice);
-  }
-
-  // Persist (optional)
-  if (BACKEND_URL) {
-    try {
-      const res = await fetch(BACKEND_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: featureId, choice, prev_choice: prevChoice })
-      });
-      if (res.ok) {
-        const json = await res.json(); // {votes_no, votes_nice, votes_must}
-        setCounts(featureId, json.votes_no, json.votes_nice, json.votes_must);
-      } else {
-        if (prevChoice) adjustCount(featureId, prevChoice, +1);
-        adjustCount(featureId, choice, -1);
-        localStorage.setItem(groupName, prevChoice ?? "");
-        console.warn('Vote API failed', await res.text());
-      }
-    } catch (err) {
-      console.warn('Vote API error', err);
-    }
-  }
-});
 
 // ===== Helpers =====
 function adjustCount(id, which, delta) {
