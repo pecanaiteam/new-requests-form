@@ -5,7 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>New Request Form</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    body, button, input, select, textarea {
+      font-family: 'Poppins', sans-serif;
+    }
+
     .priority-btn-group .btn {
       min-width: 60px;
     }
@@ -46,10 +51,10 @@
     <img src="Logo-dark.png" alt="Logo" class="d-block mx-auto mb-3" style="max-width: 200px;" />
 <div class="d-flex justify-content-between align-items-center mb-3">
   <h4 class="mb-0" style="font-weight: 600; color: #2C6C93;">New Request Form</h4>
-  <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()">In Progress / Planned Features</button>
+  <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()"  style="background-color:#62A6D0; color:white; border:none;">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://336941650057.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://e67dc4e39592.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -332,7 +337,7 @@ function filterMasterList() {
 }
 
 // ===== Backend (optional) =====
-const BACKEND_URL = "https://336941650057.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
+const BACKEND_URL = "https://e67dc4e39592.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
 
 // ===== Data normalizer (works with your nested JSON) =====
 function augmentVotes(rootObj) {
