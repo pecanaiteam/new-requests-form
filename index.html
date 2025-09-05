@@ -10,6 +10,16 @@
     body, button, input, select, textarea {
       font-family: 'Poppins', sans-serif;
     }
+    .priority-btn-group {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .priority-btn-group .btn {
+      flex: 1;
+      text-align: center;
+    }
 
     .priority-btn-group .btn {
       min-width: 60px;
@@ -54,7 +64,7 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()"  style="background-color:#62A6D0; color:white; border:none;">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://e67dc4e39592.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://1a9130ef1e7f.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
@@ -337,7 +347,7 @@ function filterMasterList() {
 }
 
 // ===== Backend (optional) =====
-const BACKEND_URL = "https://e67dc4e39592.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
+const BACKEND_URL = "https://1a9130ef1e7f.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
 
 // ===== Data normalizer (works with your nested JSON) =====
 function augmentVotes(rootObj) {
