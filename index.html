@@ -37,6 +37,32 @@
     .feature-table th:nth-child(2), .feature-table td:nth-child(2) { width: 16%; }
     .feature-table th:nth-child(3), .feature-table th:nth-child(4), .feature-table th:nth-child(5) { width: 12%; }
     .vote-count { display: none !important; }
+
+
+    /* === Suggestion dropdown styling === */
+    .suggestion-box {
+      z-index: 1000;
+      max-height: 220px;   /* taller so 4 items fit nicely */
+      overflow-y: auto;
+      border: 1px solid #2C6C93;
+      border-radius: 0.25rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .suggestion-box .list-group-item {
+      background-color: #ffffff;
+      color: #2C6C93;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border: none;
+    }
+
+    .suggestion-box .list-group-item:hover,
+    .suggestion-box .list-group-item:focus {
+      background-color: #2C6C93;
+      color: #ffffff;
+    }
+
   </style>
 </head>
 <body class="bg-light">
@@ -45,18 +71,39 @@
 <div class="modal fade" id="disclaimerModal" tabindex="-1" aria-labelledby="disclaimerLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
+      
       <div class="modal-header">
         <h5 class="modal-title" id="disclaimerLabel">Disclaimer</h5>
       </div>
+
       <div class="modal-body">
-        <p>Please note that submitting this form is not a promise of delivery or implementation. These are requests only. We will review every suggestion but cannot promise any feature or timeline.</p>
+        <p>
+          Please note that submitting this form is not a promise of delivery or implementation. 
+          These are requests only. We will review every suggestion but cannot promise any feature or timeline.
+        </p>
+
+        <p class="fw-semibold mt-3">Please choose where you would like to go:</p>
+
+        <div class="row g-2">
+          <div class="col-6">
+            <input type="radio" class="btn-check" name="disclaimerChoice" id="featureRequest" value="Feature Request" autocomplete="off" required>
+            <label class="btn btn-outline-primary w-100 text-center" for="featureRequest">Feature Request</label>
+          </div>
+          <div class="col-6">
+            <input type="radio" class="btn-check" name="disclaimerChoice" id="roadmap" value="Roadmap" autocomplete="off" required>
+            <label class="btn btn-outline-primary w-100 text-center" for="roadmap">Roadmap</label>
+          </div>
+        </div>
+      </div> <!-- end modal-body -->
+
+      <div class="modal-footer d-flex justify-content-end">
+        <button id="agreeBtn" type="button" class="btn btn-primary" disabled>I Agree</button>
       </div>
-      <div class="modal-footer">
-        <button id="agreeBtn" type="button" class="btn btn-primary">I Agree</button>
-      </div>
+
     </div>
   </div>
 </div>
+
 
 <!-- Step 1 -->
 <div class="step" id="step1">
@@ -67,19 +114,19 @@
   <button type="button" class="btn btn-secondary btn-sm" onclick="nextStep()"  style="background-color:#62A6D0; color:white; border:none;">In Progress / Planned Features</button>
 </div>
 
-<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://c1c9f287b756.ngrok-free.app/submit">
+<form id="requestForm" enctype="multipart/form-data" method="POST" action="https://98ad93c9fc80.ngrok-free.app/submit">
   <!-- Dealer Info -->
   <div class="mb-3">
     <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
-    <input type="text" class="form-control" name="requestor_name" required />
+    <input type="text" class="form-control" name="requestor_name" id="requestor_name_step1" required />
   </div>
   <div class="mb-3">
     <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
-    <input type="text" class="form-control" name="dealer_name" required />
+    <input type="text" class="form-control" name="dealer_name" id="dealer_name_step1" required />
   </div>
   <div class="mb-3">
     <label class="form-label">Email <span class="text-danger">*</span></label>
-    <input type="email" class="form-control" name="email" required />
+    <input type="email" class="form-control" name="email" id="email_step1" required />
   </div>
   <div class="mb-3">
     <label class="form-label">Phone Number (Optional)</label>
@@ -113,6 +160,19 @@
 
     <h4 class="mb-3" style="color: #2C6C93;">Requests in Development</h4>
 
+    <div class="mb-3">
+      <label class="form-label">Requestor Name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control mirror-input" name="requestor_name" id="requestor_name_step2" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Dealer's Name <span class="text-danger">*</span></label>
+      <input type="text" class="form-control mirror-input" name="dealer_name" id="dealer_name_step2" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Email <span class="text-danger">*</span></label>
+      <input type="email" class="form-control mirror-input" name="email" id="email_step2" required />
+    </div>
+
     <!-- Search -->
     <div class="input-group mb-3">
       <input type="text" id="searchInput" class="form-control" placeholder="Search features or keywords..." oninput="filterMasterList()" />
@@ -136,11 +196,33 @@
 <script>
   const disclaimerModal = new bootstrap.Modal(document.getElementById('disclaimerModal'));
   disclaimerModal.show();
-  document.getElementById('agreeBtn').addEventListener('click', () => {
-    disclaimerModal.hide();
-    document.getElementById('formContainer').style.display = 'block';
-    addFeatureBlock();
+  loadMasterList();
+
+  // ✅ Enable "I Agree" only if a choice is made
+  document.querySelectorAll('input[name="disclaimerChoice"]').forEach(radio => {
+    radio.addEventListener('change', () => {
+      document.getElementById('agreeBtn').disabled = false;
+    });
   });
+
+  document.getElementById('agreeBtn').addEventListener('click', () => {
+    const choice = document.querySelector('input[name="disclaimerChoice"]:checked').value;
+
+    disclaimerModal.hide();
+
+    if (choice === "Feature Request") {
+      // Show Step 1 (form)
+      document.getElementById('formContainer').style.display = 'block';
+      addFeatureBlock();
+    } else if (choice === "Roadmap") {
+      // Jump to Step 2 (Requests in Development)
+      if (steps.length === 0) steps = Array.from(document.querySelectorAll('.step'));
+      currentStep = 1; // step2 index
+      steps.forEach((s, i) => s.style.display = (i === 1 ? 'block' : 'none'));
+      loadMasterList();
+    }
+  });
+
 
   const container = document.getElementById('featureBlocks');
   let featureCount = 0;
@@ -158,9 +240,17 @@
     block.innerHTML = `
       <h5 class="mt-4 mb-3">Feature ${featureCount}</h5>
       <div class="row g-2 align-items-end">
-        <div class="col-12 col-md-8">
+        <div class="col-12 col-md-8 position-relative">
           <label class="form-label">Feature Name <span class="text-danger">*</span></label>
-          <input type="text" class="form-control" name="feature_name_${featureCount}" required>
+          <input type="text" 
+                 class="form-control feature-name-input" 
+                 name="feature_name_${featureCount}" 
+                 id="feature_name_${featureCount}" 
+                 autocomplete="off" required>
+          <!-- Suggestion dropdown -->
+          <div class="list-group position-absolute w-100 d-none suggestion-box" 
+               id="suggestions_${featureCount}"></div>
+
         </div>
         <div class="col-12 col-md-4">
           <label class="form-label">Feature Priority <span class="text-danger">*</span></label>
@@ -172,8 +262,19 @@
           </div>
         </div>
       </div>
-      <label class="form-label mt-3">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
-      <textarea class="form-control" name="feature_description_${featureCount}" rows="4" required></textarea>
+      <div class="col-12 position-relative">
+        <label class="form-label mt-3">Please describe the feature you are requesting and how it would improve your business. <span class="text-danger">*</span></label>
+        <textarea class="form-control feature-description-input" 
+                  name="feature_description_${featureCount}" 
+                  id="feature_description_${featureCount}" 
+                  rows="4" required></textarea>
+
+        <!-- Suggestion dropdown for description -->
+        <div class="list-group position-absolute w-100 d-none suggestion-box" 
+             id="desc_suggestions_${featureCount}"></div>
+
+      </div>
+
       <label class="form-label mt-3">Do you have any examples, screenshots, or mockups to share? (optional)</label>
       <input type="file" class="form-control" name="attachment_${featureCount}" accept="image/*,.pdf,.doc,.docx" />
       <label class="form-label mt-3">Severity <span class="text-danger">*</span></label>
@@ -185,6 +286,7 @@
       </select>
     `;
     container.appendChild(block);
+    attachAutocompleteToNewBlock(featureCount);
     updatePriorityButtons();
     updateSeverityDropdowns();
     if (featureCount >= maxFeatures) document.getElementById('addFeature').disabled = true;
@@ -283,9 +385,22 @@ function prevStep() {
     steps[currentStep].style.display = 'none';
     currentStep--;
     steps[currentStep].style.display = 'block';
+
+    // ✅ Make sure Step 1 shows the form again
+    if (currentStep === 0) {
+      const formContainer = document.getElementById('formContainer');
+      formContainer.style.display = 'block';
+
+      // If no feature block exists yet, add one
+      if (document.querySelectorAll('.feature-block').length === 0) {
+        addFeatureBlock();
+      }
+    }
+
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
+
 
 let masterData = []; // Global array for filtering
 
@@ -350,7 +465,7 @@ function filterMasterList() {
 }
 
 // ===== Backend (optional) =====
-const BACKEND_URL = "https://c1c9f287b756.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
+const BACKEND_URL = "https://98ad93c9fc80.ngrok-free.app/feature-vote"; // e.g. "https://api.yoursite.com/feature-vote"
 
 // ===== Data normalizer (works with your nested JSON) =====
 function augmentVotes(rootObj) {
@@ -522,6 +637,163 @@ function slugify(s) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
     .slice(0, 60) || 'item';
 }
+
+// Keep Step 1 and Step 2 inputs mirrored
+// Mirror values between Step 1 and Step 2
+function setupMirroredInputs() {
+  const pairs = [
+    ["requestor_name_step1", "requestor_name_step2"],
+    ["dealer_name_step1", "dealer_name_step2"],
+    ["email_step1", "email_step2"]
+  ];
+
+  pairs.forEach(([id1, id2]) => {
+    const input1 = document.getElementById(id1);
+    const input2 = document.getElementById(id2);
+
+    if (input1 && input2) {
+      // When Step 1 changes, update Step 2
+      input1.addEventListener("input", () => {
+        input2.value = input1.value;
+      });
+
+      // When Step 2 changes, update Step 1
+      input2.addEventListener("input", () => {
+        input1.value = input2.value;
+      });
+    }
+  });
+}
+
+document.addEventListener("DOMContentLoaded", setupMirroredInputs);
+
+// === Autocomplete setup ===
+
+// Autocomplete handler for one field
+function setupAutocomplete(inputEl, suggestionBox) {
+  inputEl.addEventListener("input", () => {
+    const query = inputEl.value.trim().toLowerCase();
+    if (!query || masterData.length === 0) {
+      suggestionBox.classList.add("d-none");
+      return;
+    }
+
+    // Get top 4 matches
+    const matches = masterData
+      .filter(row => (row["Summary"] || "").toLowerCase().includes(query))
+      .slice(0, 4);
+
+    if (matches.length === 0) {
+      suggestionBox.classList.add("d-none");
+      return;
+    }
+
+    // Build suggestion list
+    suggestionBox.innerHTML = matches
+      .map(m => `<button type="button" class="list-group-item list-group-item-action">${m["Summary"]}</button>`)
+      .join("");
+
+    suggestionBox.classList.remove("d-none");
+
+    // When a suggestion is clicked
+    suggestionBox.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        inputEl.value = btn.textContent;
+        suggestionBox.classList.add("d-none");
+      });
+    });
+  });
+
+  // Hide suggestions on blur (after short delay so click works)
+  inputEl.addEventListener("blur", () => {
+    setTimeout(() => suggestionBox.classList.add("d-none"), 200);
+  });
+}
+
+// Attach autocomplete when a new feature block is added
+function attachAutocompleteToNewBlock(index) {
+  const inputEl = document.getElementById(`feature_name_${index}`);
+  const suggestionBox = document.getElementById(`suggestions_${index}`);
+  if (inputEl && suggestionBox) {
+    setupAutocomplete(inputEl, suggestionBox);
+  }
+}
+
+// === Autocomplete for description field ===
+function setupDescriptionAutocomplete(textareaEl, suggestionBox, featureInput) {
+  textareaEl.addEventListener("input", () => {
+    const query = textareaEl.value.trim().toLowerCase();
+    if (!query || masterData.length === 0) {
+      suggestionBox.classList.add("d-none");
+      return;
+    }
+
+    const queryWords = query.split(/\s+/).filter(w => w.length > 2);
+
+    const matches = masterData
+      .map(row => {
+        const combined = [
+          row["Summary"] || "",
+          ...Object.keys(row)
+              .filter(k => k.toLowerCase().startsWith("paraphrase"))
+              .map(k => row[k] || "")
+        ].join(" ").toLowerCase();
+
+        let score = 0;
+        queryWords.forEach(word => {
+          if (combined.includes(word)) score++;
+        });
+
+        return { row, score };
+      })
+      .filter(m => m.score > 0)
+      .sort((a, b) => b.score - a.score);
+
+    // keep only top 4, drop weak matches
+    const best = matches.length > 0 ? matches[0].score : 0;
+    const filtered = matches.filter(m => m.score >= Math.max(1, best * 0.4)).slice(0, 4);
+
+    if (filtered.length === 0) {
+      suggestionBox.classList.add("d-none");
+      return;
+    }
+
+    suggestionBox.innerHTML = filtered
+      .map(m => `<button type="button" class="list-group-item list-group-item-action">${m.row["Summary"]}</button>`)
+      .join("");
+
+    suggestionBox.classList.remove("d-none");
+
+    suggestionBox.querySelectorAll("button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        // ✅ Fill Feature Name, keep description untouched
+        featureInput.value = btn.textContent;
+        suggestionBox.classList.add("d-none");
+      });
+    });
+  });
+
+  textareaEl.addEventListener("blur", () => {
+    setTimeout(() => suggestionBox.classList.add("d-none"), 200);
+  });
+}
+
+// Extend autocomplete hookup for new blocks
+function attachAutocompleteToNewBlock(index) {
+  const inputEl = document.getElementById(`feature_name_${index}`);
+  const suggestionBox = document.getElementById(`suggestions_${index}`);
+  if (inputEl && suggestionBox) {
+    setupAutocomplete(inputEl, suggestionBox);
+  }
+
+  const descEl = document.getElementById(`feature_description_${index}`);
+  const descBox = document.getElementById(`desc_suggestions_${index}`);
+  if (descEl && descBox && inputEl) {
+    setupDescriptionAutocomplete(descEl, descBox, inputEl);
+  }
+}
+
+
 
 </script>
 </body>
